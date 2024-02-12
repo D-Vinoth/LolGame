@@ -15,7 +15,6 @@
 
     <script src="https://d3js.org/d3.v4.js"></script>
     <script src="https://unpkg.com/d3-simple-slider"></script>
-    <script src="script.js"></script>
   </head>
   <body>
     <h1>Lol Game Visualization</h1>
@@ -27,18 +26,27 @@
     <div class="container-fluid">
       <div class="row">
         <!-- First column with the div container -->
-        <div class="col-md-8">
+        <div class="col-md-6 d-flex justify-content-center">
           <div id="my_dataviz"></div>
         </div>
 
         <!-- Second column with the teams container -->
-        <div class="col-md-4">
+        <div class="col-md-6" id="teams_container">
+          <div id="dataToVis">
+            <label for="mySelector">Select data to visualize:</label>
+            <select id="mySelector">
+              <option value="totalGold">Total Gold</option>
+              <option value="minionsKilled">Minions Killed</option>
+              <!-- Add more options as needed -->
+            </select>
+          </div>
           <!-- Add your teams container content here -->
-          <div class="teams-container">
+          <div class="teams-container" id="teams_data">
             <!-- Your teams content goes here -->
           </div>
         </div>
       </div>
     </div>
+    <script src="script.js"></script>
   </body>
 </html>

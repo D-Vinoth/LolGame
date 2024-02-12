@@ -1,7 +1,63 @@
 const filePath = "faker.json";
-let game2;
 
-// Define the fetchData function
+// Fonction qui récupère l'image du champion en fonction de son nom
+function getChampionImageSrc(championName) {
+  const imageSrc = `img/${championName}.png`;
+  return imageSrc;
+}
+
+// Fonction qui renvoit la liste de tout les champions avec leur id
+let myMap = new Map();
+function getChampName(data) {
+  data.forEach((event) => {
+    let killerId = event.killerId;
+    let killerEntry = event.victimDamageReceived.find(
+      (entry) => entry.participantId === killerId
+    );
+    myMap.set(`${killerId}`, `${killerEntry.name}`);
+    let victimId = event.victimId;
+    let victimName = "";
+    if (event.victimDamageDealt) {
+      victimName = event.victimDamageDealt[0].name;
+      myMap.set(`${victimId}`, `${victimName}`);
+    }
+  });
+  return myMap;
+}
+
+// Fonction qui récupère la liste des champions et qui les ajoute dans une div avec les images
+function generateTeamHTML(championMap, targetContainerClass) {
+  let targetContainer = document.querySelector(`.${targetContainerClass}`);
+  let teamRed = [];
+  let teamBlue = [];
+
+  championMap.forEach((champion, key) => {
+    let championImgSrc = getChampionImageSrc(champion); // Replace with your actual function
+    if (parseInt(key) >= 1 && parseInt(key) <= 5) {
+      teamRed.push(
+        `<img src="${championImgSrc}" alt="${champion}" width="50" height="50" style="margin-bottom: 5px;" /> <br>`
+      );
+    } else if (parseInt(key) >= 6 && parseInt(key) <= 10) {
+      teamBlue.push(
+        `<img src="${championImgSrc}" alt="${champion}" width="50" height="50" style="margin-bottom: 5px;" /> <br>`
+      );
+    }
+  });
+
+  // Add HTML to targetContainer
+  targetContainer.innerHTML = `
+    <div>
+      <h2>Red Team</h2>
+      ${teamRed.join("")}
+    </div>
+    <div>
+      <h2>Blue Team</h2>
+      ${teamBlue.join("")}
+    </div>
+  `;
+}
+
+// Fonction qui récupère les données depuis le json
 async function fetchData() {
   try {
     const response = await fetch(filePath);
@@ -13,6 +69,16 @@ async function fetchData() {
 }
 
 (async () => {
+  let selected = "";
+
+  document.getElementById("mySelector").addEventListener("change", function () {
+    // Get the selected value from the dropdown
+    selected = document.getElementById("mySelector").value;
+    const currentValue = slider.value();
+    updateStat(currentValue, selected);
+    console.log(selected);
+  });
+
   // Call the fetchData function
   const game2 = await fetchData();
   const modifiedGame2Info =
@@ -23,8 +89,18 @@ async function fetchData() {
     })) || [];
   let flattenedEvents2 = modifiedGame2Info.flatMap((item) => item.events);
   let listChamp = getChampName(flattenedEvents2);
-  generateTeamHTML(listChamp, "teams-container");
   console.log(listChamp);
+  const modifiedGame2Frames =
+    game2?.info?.frames?.map((item) => ({
+      participantFrames: item.participantFrames,
+      timestamp: item.timestamp,
+    })) || [];
+
+  console.log(modifiedGame2Frames);
+  // generateTeamHTML(listChamp, "teams-container");
+
+  //// Premier plot avec la map
+
   // Plot creation
   const margin = { top: 20, right: 20, bottom: 80, left: 50 };
   const width = 600 - margin.left - margin.right;
@@ -81,7 +157,11 @@ async function fetchData() {
     .max(d3.max(flattenedEvents2, (d) => d.timestamp))
     .step(1)
     .width(width)
-    .on("onchange", (val) => updateGraph(val));
+    .on("onchange", (val) => {
+      selected = document.getElementById("mySelector").value;
+      updateGraph(val);
+      updateStat(val, (param2 = selected));
+    });
 
   svg
     .append("g")
@@ -98,9 +178,7 @@ async function fetchData() {
     .style("padding", "8px")
     .style("border-radius", "4px");
 
-  // Other parts of your existing code...
-
-  // Function to update the graph
+  // Fonction qui met à jour la map en fonction du temps dans le slider
   function updateGraph(selectedTime) {
     const filteredData = flattenedEvents2.filter(
       (event) => event.timestamp <= selectedTime
@@ -122,7 +200,6 @@ async function fetchData() {
         d.killerId >= 1 && d.killerId <= 5 ? "red" : "blue"
       )
       .on("mouseover", (event, d) => {
-        console.log(event);
         // getAssist(event);
         const killerImgSrc = getChampionImageSrc(
           `${listChamp.get(`${event.killerId}`)}`
@@ -163,59 +240,192 @@ async function fetchData() {
 
   // Initial plot
   updateGraph(0);
-})();
 
-function getChampionImageSrc(championName) {
-  const imageSrc = `img/${championName}.png`;
-  return imageSrc;
-}
+  //// Second graphe
+  // function updateStat(selectedTime, param2 = "totalGold") {
+  //   // Remove existing chart
+  //   d3.select("#teams_data").select("svg").remove();
 
-let myMap = new Map();
-function getChampName(data) {
-  data.forEach((event) => {
-    let killerId = event.killerId;
-    let killerEntry = event.victimDamageReceived.find(
-      (entry) => entry.participantId === killerId
+  //   // Filter data based on selected time
+  //   const filteredData = modifiedGame2Frames.filter(
+  //     (event) => event.timestamp <= selectedTime
+  //   );
+
+  //   // Extract and flatten participantFrames content
+  //   const flattenedParticipantFrames = [].concat(
+  //     ...filteredData.map((item) =>
+  //       Object.values(item.participantFrames).flat()
+  //     )
+  //   );
+  //   // Extract participantIds and currentGold for the bar chart
+  //   const dataForChart = flattenedParticipantFrames.map((frame) => ({
+  //     participantId: frame.participantId.toString(),
+  //     // selectedValue: frame.selectedValue,
+  //     selectedValue: frame[param2].toString(),
+  //   }));
+  //   // Create a new SVG container
+  //   // Assuming teams_container is the ID of your container
+  //   var containerWidth = document.getElementById("teams_container").clientWidth;
+
+  //   // Create a new SVG container
+  //   var svg2 = d3
+  //     .select("#teams_data")
+  //     .append("svg")
+  //     .attr("width", containerWidth) // Set the width to be equal to the container width
+  //     .attr("height", height + margin.top + margin.bottom)
+  //     .append("g")
+  //     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  //   // X axis
+  //   var x = d3
+  //     .scaleLinear()
+  //     .domain([0, d3.max(dataForChart, (d) => +d.selectedValue)])
+  //     .range([0, width]);
+  //   svg2
+  //     .append("g")
+  //     .attr("class", "x-axis")
+  //     .attr("transform", "translate(0," + height + ")") // Move the X axis to the bottom
+  //     .call(d3.axisBottom(x));
+
+  //   // Y axis
+  //   // Y axis
+  //   var y = d3
+  //     .scaleBand()
+  //     .range([0, height])
+  //     .domain(
+  //       dataForChart.map(function (d) {
+  //         return d.participantId;
+  //       })
+  //     )
+  //     .padding(0.2);
+  //   svg2.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
+
+  //   // Add images to the Y-axis ticks
+  //   svg2
+  //     .selectAll(".y-axis .tick text")
+  //     .attr("dy", "0.35em") // Adjust this value based on your layout
+  //     .each(function (d) {
+  //       var champName = listChamp.get(d);
+  //       // Replace text with champion name
+  //       d3.select(this).text(champName);
+  //     });
+
+  //   // Bars
+  //   svg2
+  //     .selectAll(".mybar")
+  //     .data(dataForChart)
+  //     .enter()
+  //     .append("rect")
+  //     .attr("class", "mybar")
+  //     .attr("fill", function (d) {
+  //       // Set fill color based on participant ID
+  //       return +d.participantId >= 1 && +d.participantId <= 5 ? "red" : "blue";
+  //     })
+  //     .attr("y", function (d) {
+  //       return y(d.participantId);
+  //     })
+  //     .attr("x", 0)
+  //     .attr("height", y.bandwidth())
+  //     .attr("width", function (d) {
+  //       console.log(d);
+  //       return x(d.selectedValue);
+  //     });
+  // }
+
+  function updateStat(selectedTime, param2 = "totalGold") {
+    // Remove existing chart
+    d3.select("#teams_data").select("svg").remove();
+
+    // Filter data based on selected time
+    let filteredData = modifiedGame2Frames.filter(
+      (event) => event.timestamp <= selectedTime
     );
-    myMap.set(`${killerId}`, `${killerEntry.name}`);
-    let victimId = event.victimId;
-    let victimName = "";
-    if (event.victimDamageDealt) {
-      victimName = event.victimDamageDealt[0].name;
-      myMap.set(`${victimId}`, `${victimName}`);
+
+    // Extract and flatten participantFrames content
+    let flattenedParticipantFrames = [].concat(
+      ...filteredData.map((item) =>
+        Object.values(item.participantFrames).flat()
+      )
+    );
+    console.log(flattenedParticipantFrames);
+
+    // Extract participantIds and selectedValue for the bar chart
+    let dataForChart = flattenedParticipantFrames.map((frame) => ({
+      participantId: frame.participantId.toString(),
+      selectedValue: +frame[param2], // Parse to number
+    }));
+    console.log(dataForChart);
+    // Avoid empty SVG
+    if (dataForChart.length === 0) {
+      console.warn("No valid data to display.");
+      return;
     }
-  });
-  return myMap;
-}
 
-function generateTeamHTML(championMap, targetContainerClass) {
-  let targetContainer = document.querySelector(`.${targetContainerClass}`);
-  console.log(targetContainer);
-  let teamRed = [];
-  let teamBlue = [];
+    // Create a new SVG container
+    var containerWidth = document.getElementById("teams_container").clientWidth;
 
-  championMap.forEach((champion, key) => {
-    let championImgSrc = getChampionImageSrc(champion); // Replace with your actual function
-    if (parseInt(key) >= 1 && parseInt(key) <= 5) {
-      teamRed.push(
-        `<img src="${championImgSrc}" alt="${champion}" width="50" height="50" style="margin-right: 5px;" />`
-      );
-    } else if (parseInt(key) >= 6 && parseInt(key) <= 10) {
-      teamBlue.push(
-        `<img src="${championImgSrc}" alt="${champion}" width="50" height="50" style="margin-right: 5px;" />`
-      );
-    }
-  });
+    // Create a new SVG container
+    var svg2 = d3
+      .select("#teams_data")
+      .append("svg")
+      .attr("width", containerWidth) // Set the width to be equal to the container width
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  // Add HTML to targetContainer
-  targetContainer.innerHTML = `
-    <div>
-      <h2>Red Team</h2>
-      ${teamRed.join("")}
-    </div>
-    <div>
-      <h2>Blue Team</h2>
-      ${teamBlue.join("")}
-    </div>
-  `;
-}
+    // X axis
+    var x = d3
+      .scaleLinear()
+      .domain([0, d3.max(dataForChart, (d) => +d.selectedValue)])
+      .range([0, width]);
+    svg2
+      .append("g")
+      .attr("class", "x-axis")
+      .attr("transform", "translate(0," + height + ")") // Move the X axis to the bottom
+      .call(d3.axisBottom(x));
+
+    // Y axis
+    var y = d3
+      .scaleBand()
+      .range([0, height])
+      .domain(
+        dataForChart.map(function (d) {
+          return d.participantId;
+        })
+      )
+      .padding(0.2);
+    svg2.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
+    svg2
+      .selectAll(".y-axis .tick text")
+      .attr("dy", "0.35em") // Adjust this value based on your layout
+      .each(function (d) {
+        var champName = listChamp.get(d);
+        // Replace text with champion name
+        d3.select(this).text(champName);
+      });
+    // Bars
+    svg2
+      .selectAll(".mybar")
+      .data(dataForChart)
+      .enter()
+      .append("rect")
+      .attr("class", "mybar")
+      .attr("fill", function (d) {
+        // Set fill color based on participant ID
+        return +d.participantId >= 1 && +d.participantId <= 5 ? "red" : "blue";
+      })
+      .attr("y", function (d) {
+        return y(d.participantId);
+      })
+      .attr("x", 0)
+      .attr("height", y.bandwidth())
+      .attr("width", function (d) {
+        return x(d.selectedValue);
+      });
+
+    flattenedParticipantFrames = [];
+    dataForChart = [];
+  }
+
+  updateStat(0, (param2 = "totalGold"));
+})();
