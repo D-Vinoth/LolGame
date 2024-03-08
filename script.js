@@ -408,7 +408,7 @@ async function fetchData() {
     d3.select("#champ_items").select("svg").remove();
 
     const height = 700;
-    const width = 700;
+    const width = 600;
     const margin = { top: 20, left: 20, bottom: 20, right: 20 };
     const padding = 20;
 

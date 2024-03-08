@@ -18,14 +18,9 @@
   </head>
   <body>
     <h1 style="padding-bottom: 30px">Lol Game Visualization</h1>
-    <!-- Create a div where the graph will take place -->
-    <!-- <div class="container">
-      <div id="my_dataviz"></div>
-    </div> -->
 
-    <div class="container-fluid">
+    <!-- <div class="container-fluid">
       <div class="row">
-        <!-- First column with the div container -->
         <div class="col-md-6 d-flex justify-content-center">
           <div id="legend" style="padding-bottom: 5px"></div>
           <div id="my_dataviz">
@@ -33,7 +28,6 @@
           </div>
         </div>
 
-        <!-- Second column with the teams container -->
         <div class="col-md-6" id="teams_container">
           <div id="dataToVis">
             <h3>Statistics during time</h3>
@@ -41,12 +35,9 @@
             <select id="mySelector">
               <option value="totalGold">Total Gold</option>
               <option value="minionsKilled">Minions Killed</option>
-              <!-- Add more options as needed -->
             </select>
           </div>
-          <!-- Add your teams container content here -->
           <div class="teams-container" id="teams_data">
-            <!-- Your teams content goes here -->
           </div>
         </div>
       </div>
@@ -56,7 +47,35 @@
           <h3>Itemization during time</h3>
         </div>
       </div>
+    </div> -->
+
+    <div class="container-fluid">
+      <div class="row">
+        <div id="legend"></div>
+        <div class="col-md-4 d-flex justify-content-center">
+          <div id="my_dataviz">
+            <h3 style="text-align: center">Summoner's Rift</h3>
+          </div>
+        </div>
+
+        <div class="col-md-4" id="teams_container">
+          <div id="dataToVis">
+            <h3>Statistics during time</h3>
+            <label for="mySelector">Select data to visualize:</label>
+            <select id="mySelector">
+              <option value="totalGold">Total Gold</option>
+              <option value="minionsKilled">Minions Killed</option>
+            </select>
+          </div>
+          <div class="teams-container" id="teams_data"></div>
+        </div>
+
+        <div class="col-md-4" id="champ_items" style="">
+          <h3>Itemization during time</h3>
+        </div>
+      </div>
     </div>
+
     <script src="script.js"></script>
   </body>
 </html>
