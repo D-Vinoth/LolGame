@@ -17,7 +17,7 @@
     <script src="https://unpkg.com/d3-simple-slider"></script>
   </head>
   <body>
-    <h1>Lol Game Visualization</h1>
+    <h1 style="padding-bottom: 30px">Lol Game Visualization</h1>
     <!-- Create a div where the graph will take place -->
     <!-- <div class="container">
       <div id="my_dataviz"></div>
@@ -27,12 +27,16 @@
       <div class="row">
         <!-- First column with the div container -->
         <div class="col-md-6 d-flex justify-content-center">
-          <div id="my_dataviz"></div>
+          <div id="legend" style="padding-bottom: 5px"></div>
+          <div id="my_dataviz">
+            <h3 style="text-align: center">Summoner's Rift</h3>
+          </div>
         </div>
 
         <!-- Second column with the teams container -->
         <div class="col-md-6" id="teams_container">
           <div id="dataToVis">
+            <h3>Statistics during time</h3>
             <label for="mySelector">Select data to visualize:</label>
             <select id="mySelector">
               <option value="totalGold">Total Gold</option>
@@ -44,6 +48,12 @@
           <div class="teams-container" id="teams_data">
             <!-- Your teams content goes here -->
           </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6"></div>
+        <div class="col-md-6" id="champ_items">
+          <h3>Itemization during time</h3>
         </div>
       </div>
     </div>
